@@ -1,0 +1,86 @@
+:host {
+  display: block;
+  position: relative;
+  outline: none;
+  user-select: none;
+}
+
+.ff-carousel {
+  &-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  &-element {
+    overflow: hidden;
+    display: none;
+    position: relative;
+    width: 100%;
+    backface-visibility: hidden;
+    opacity: 0;
+    transition: all 2s ease;
+
+    &.active {
+      display: block;
+      opacity: 1;
+    }
+  }
+
+  &-btn {
+    &-prev, &-next {
+      display: flex;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      z-index: 10;
+      align-items: center;
+      justify-content: center;
+      width: 15%;
+      color: #fff;
+      text-align: center;
+      opacity: .6;
+      transition: opacity .3s ease;
+      background-color: transparent;
+      text-decoration: none;
+
+      &:hover {
+        opacity: 1;
+
+        &.overlay {
+          background-color: rgba(0, 0, 0, .2);
+        }
+      }
+    }
+
+    &-prev {
+      left: 0;
+      transform: rotate(-180deg);
+
+    }
+
+    &-next {
+      right: 0;
+    }
+  }
+
+  &-indicators {
+    position: absolute;
+    bottom: 0;
+    display: flex;
+    margin: auto;
+    z-index: 10;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  &-indicator {
+    opacity: 0.5;
+    cursor: pointer;
+
+    &.active, &:hover {
+      opacity: 1;
+    }
+  }
+}
+

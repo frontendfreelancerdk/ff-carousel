@@ -54,7 +54,7 @@
     ],
     "no-empty": false,
     "no-inferrable-types": [
-      true,
+      false,
       "ignore-params"
     ],
     "no-non-null-assertion": true,
@@ -86,6 +86,10 @@
     "use-lifecycle-interface": true,
     "use-pipe-transform-interface": true
   },
+  "variable-name": [
+    false,
+    "allow-leading-underscore"
+  ],
   "rulesDirectory": [
     "codelyzer"
   ]

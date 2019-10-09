@@ -44,3 +44,9 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Coverage
+/projects/ff-resize-sensor/coverage
+
+# Readme
+/projects/ff-resize-sensor/README.md

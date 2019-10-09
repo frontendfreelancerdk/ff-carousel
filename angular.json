@@ -124,6 +124,41 @@
           }
         }
       }
+    },
+    "ff-carousel": {
+      "projectType": "library",
+      "root": "projects/ff-carousel",
+      "sourceRoot": "projects/ff-carousel/src",
+      "prefix": "ff",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/ff-carousel/tsconfig.lib.json",
+            "project": "projects/ff-carousel/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/ff-carousel/src/test.ts",
+            "tsConfig": "projects/ff-carousel/tsconfig.spec.json",
+            "karmaConfig": "projects/ff-carousel/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/ff-carousel/tsconfig.lib.json",
+              "projects/ff-carousel/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }},
   "defaultProject": "ff-carousel-app"
 }
