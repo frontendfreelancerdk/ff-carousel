@@ -14,13 +14,15 @@ import {FFCarouselItemDirective} from './ff-carousel-item.directive';
 import {FFCarouselIndicatorDirective} from './ff-carousel-indicator.directive';
 import {FFCarouselArrowDirective} from './ff-carousel-arrow.directive';
 import {BehaviorSubject, Subject} from 'rxjs';
+import {fadeIn} from './ff-carousel.animations';
 
 @Component({
   selector: 'ff-carousel',
   templateUrl: 'ff-carousel.component.html',
   styleUrls: ['ff-carousel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  exportAs: 'FFCarousel'
+  exportAs: 'FFCarousel',
+  animations: [fadeIn]
 })
 export class FFCarouselComponent implements AfterContentInit, AfterContentChecked, OnDestroy {
   @ContentChildren(FFCarouselItemDirective) items: QueryList<FFCarouselItemDirective>;

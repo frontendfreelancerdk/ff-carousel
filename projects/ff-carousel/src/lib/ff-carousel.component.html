@@ -5,8 +5,10 @@
   <a *ngIf="showArrows" class="ff-carousel-btn-next" [ngClass]="{'overlay': btnOverlay}" role="button" (click)="next()">
     <ng-template [ngTemplateOutlet]="arrow?.el"></ng-template>
   </a>
-  <div *ngFor="let elem of elements" class="ff-carousel-element" [ngClass]="{'active': elem?.id === activeId}">
-    <ng-template [ngTemplateOutlet]="elem?.el"></ng-template>
+  <div *ngFor="let elem of elements" class="ff-carousel-element" >
+    <div *ngIf="elem?.id === activeId" @fadeIn>
+      <ng-template [ngTemplateOutlet]="elem?.el"></ng-template>
+    </div>
   </div>
   <div class="ff-carousel-indicators" *ngIf="showIndicators">
     <div *ngFor="let i of items" class="ff-carousel-indicator" [ngClass]="{'active': i?.id === activeId}"

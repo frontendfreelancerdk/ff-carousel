@@ -1,9 +1,9 @@
-<ff-carousel [btnOverlay]="true" (switched)="switched()" [pauseOnHover]="false">
+<ff-carousel [btnOverlay]="true" (switched)="switched()" [pauseOnHover]="true" [loop]="false">
   <ng-container *ngFor="let img of images">
     <div *ffCarouselItem class="imgWrapper">
       <img src="{{img}}" alt="">
     </div>
   </ng-container>
   <div *ffCarouselIndicator class="indicator">*</div>
-  <div *ffCarouselArrow class="arrow">></div>
+  <div *ffCarouselArrow class="arrow"> > </div>
 </ff-carousel>
