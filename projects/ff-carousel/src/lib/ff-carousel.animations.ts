@@ -7,10 +7,10 @@ import {
 
 export const fadeIn = trigger('fadeIn', [
   transition(':enter', [
-    style({opacity: 1, transform: 'translate(100%)'}),
-    animate('0.3s', style({opacity: 1, transform: 'translate(0)'})),
+    style({opacity: 0}),
+    animate('0.3s', style({opacity: 1})),
   ]),
   transition(':leave', [
-    animate('0.3s', style({opacity: 1,  transform: 'translate(-100%)'}))
+    animate('0.3s', style({opacity: 0}))
   ])
 ]);
