@@ -11,4 +11,7 @@ export class FFCarouselItemDirective {
   constructor(public el: TemplateRef<any>) {
   }
 
+  static resetId() {
+    id = 0;
+  }
 }

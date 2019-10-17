@@ -146,6 +146,7 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
 
   ngOnDestroy(): void {
     this._destroy.next();
+    FFCarouselItemDirective.resetId();
   }
 
 
