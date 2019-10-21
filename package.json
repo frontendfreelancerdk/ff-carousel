@@ -1,6 +1,6 @@
 {
   "name": "ff-carousel-app",
-  "version": "8.0.3",
+  "version": "8.0.5",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -11,7 +11,8 @@
     "test_lib": "ng test ff-carousel --watch=false --browsers=ChromeHeadless",
     "build_lib": "ng build ff-carousel",
     "prebuild_lib": "node copy_readme",
-    "watch_lib": "ng build ff-carousel --watch"
+    "watch_lib": "ng build ff-carousel --watch",
+    "pub_lib": "cd dist/ff-carousel && npm publish"
   },
   "private": true,
   "dependencies": {

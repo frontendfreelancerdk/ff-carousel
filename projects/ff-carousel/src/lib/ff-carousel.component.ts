@@ -13,8 +13,9 @@ import {
 import {FFCarouselItemDirective} from './ff-carousel-item.directive';
 import {FFCarouselIndicatorDirective} from './ff-carousel-indicator.directive';
 import {FFCarouselArrowDirective} from './ff-carousel-arrow.directive';
-import {BehaviorSubject, Subject} from 'rxjs';
+import {interval, Observable, Subject} from 'rxjs';
 import {fadeIn} from './ff-carousel.animations';
+import {takeUntil} from 'rxjs/operators';
 
 @Component({
   selector: 'ff-carousel',
@@ -30,11 +31,10 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
   @ContentChild(FFCarouselArrowDirective, {static: false}) arrow: FFCarouselArrowDirective;
   @HostBinding('class') hostClass = 'ff-carousel';
   @HostBinding('attr.tabindex') tabindex = '1';
-
+  private _timer: Observable<number>;
   private _destroy = new Subject<void>();
+  private _timerStop = new Subject<void>();
   private _lastLenght: number = 0;
-  private _loopState: boolean = false;
-  private _intervalId = null;
   public elements: FFCarouselItemDirective[];
 
   private _activeId: number = 0;
@@ -51,6 +51,16 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
   @Input() btnOverlay: boolean = true;
   @Input() showArrows: boolean = true;
   @Input() showIndicators: boolean = true;
+  private _autoplay: boolean = true;
+  get autoplay(): boolean {
+    return this._autoplay;
+  }
+
+  @Input() set autoplay(val: boolean) {
+    this._autoplay = val;
+    this.autoplay ? this.play() : this.stop();
+  }
+
   private _loop: boolean = true;
   get loop(): boolean {
     return this._loop;
@@ -58,42 +68,48 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
 
   @Input() set loop(val: boolean) {
     this._loop = val;
-    this.loop ? this.play() : this.pause();
   }
 
   @Input() keyboard: boolean = true;
-  @Input() interval: number = 1500;
+  @Input() interval: number = 3500;
 
   @Output() switched: EventEmitter<void> = new EventEmitter<void>();
 
   @HostListener('mouseenter')
   mouseEnter() {
-    this.pauseOnHover && this.pause();
+    if (this.pauseOnHover) {
+      this.stop();
+    }
   }
 
   @HostListener('mouseleave')
   mouseLeave() {
-    this.pauseOnHover && this.play();
+    if (this.pauseOnHover) {
+      this.play();
+    }
   }
 
-  @HostListener('keydown.ArrowRight', ['$event'])
-  arrowRight(e) {
-    this.keyboard && this.next();
+  @HostListener('keydown.ArrowRight')
+  arrowRight() {
+    if (this.keyboard) {
+      this.next();
+    }
   }
 
-  @HostListener('keydown.ArrowLeft', ['$event'])
-  arrowLeft(e) {
-    this.keyboard && this.prev();
+  @HostListener('keydown.ArrowLeft')
+  arrowLeft() {
+    if (this.keyboard) {
+      this.prev();
+    }
   }
 
-  constructor(@Inject(PLATFORM_ID) private _platformId, private _ngZone: NgZone, private _cdr: ChangeDetectorRef) {
-
+  constructor(@Inject(PLATFORM_ID) private _platformId, private _cdr: ChangeDetectorRef) {
   }
 
   ngAfterContentInit(): void {
     this.elements = this.items.toArray();
     this._lastLenght = this.items.length || 0;
-    if (this.loop) {
+    if (this.autoplay) {
       this.play();
     }
   }
@@ -109,6 +125,8 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
     if (this.activeId === this.elements.length - 1) {
       if (this.loop) {
         this.activeId = 0;
+      } else {
+        this.stop();
       }
     } else {
       this.activeId += 1;
@@ -129,25 +147,36 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
     this.activeId = id;
   }
 
-  public pause() {
-    this._loopState = false;
-    window.clearInterval(this._intervalId);
-    this._intervalId = null;
+  public stop() {
+    this._timerStop.next();
   }
 
   public play() {
-    if (this.loop) {
-      this._loopState = true;
-      this._intervalId = window.setInterval(() => {
-        this.next();
-      }, this.interval);
+    if (this.autoplay) {
+      this.resetTimer(this.interval);
+      this.startTimer();
     }
   }
 
   ngOnDestroy(): void {
     this._destroy.next();
+    this._destroy.complete();
     FFCarouselItemDirective.resetId();
   }
 
+  private resetTimer(value: number): void {
+    this._timer = interval(value);
+  }
+
+  private startTimer(): void {
+    this._timer
+      .pipe(
+        takeUntil(this._timerStop),
+        takeUntil(this._destroy),
+      )
+      .subscribe(() => {
+        this.next();
+      });
+  }
 
 }
