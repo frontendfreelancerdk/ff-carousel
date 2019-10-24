@@ -13,9 +13,10 @@ import {
 import {FFCarouselItemDirective} from './ff-carousel-item.directive';
 import {FFCarouselIndicatorDirective} from './ff-carousel-indicator.directive';
 import {FFCarouselArrowDirective} from './ff-carousel-arrow.directive';
-import {interval, Observable, Subject} from 'rxjs';
+import {BehaviorSubject, combineLatest, NEVER, Subject, Subscription, timer} from 'rxjs';
 import {fadeIn} from './ff-carousel.animations';
-import {takeUntil} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap, takeUntil} from 'rxjs/operators';
+import {isPlatformBrowser} from '@angular/common';
 
 @Component({
   selector: 'ff-carousel',
@@ -31,62 +32,121 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
   @ContentChild(FFCarouselArrowDirective, {static: false}) arrow: FFCarouselArrowDirective;
   @HostBinding('class') hostClass = 'ff-carousel';
   @HostBinding('attr.tabindex') tabindex = '1';
-  private _timer: Observable<number>;
-  private _destroy = new Subject<void>();
-  private _timerStop = new Subject<void>();
-  private _lastLenght: number = 0;
-  public elements: FFCarouselItemDirective[];
 
+  private _destroy = new Subject<void>();
   private _activeId: number = 0;
+
   get activeId(): number {
     return this._activeId;
   }
 
   @Input() set activeId(val: number) {
     this._activeId = val;
+    this._cdr.markForCheck();
     this.switched.emit();
   }
 
-  @Input() pauseOnHover: boolean = true;
-  @Input() btnOverlay: boolean = true;
-  @Input() showArrows: boolean = true;
-  @Input() showIndicators: boolean = true;
-  private _autoplay: boolean = true;
+  private _interval: BehaviorSubject<number> = new BehaviorSubject(3000);
+  get interval(): number {
+    return this._interval.value;
+  }
+
+  @Input() set interval(val: number) {
+    this._interval.next(val);
+  }
+
+  private _autoplay: BehaviorSubject<boolean> = new BehaviorSubject(true);
   get autoplay(): boolean {
-    return this._autoplay;
+    return this._autoplay.value;
   }
 
   @Input() set autoplay(val: boolean) {
-    this._autoplay = val;
-    this.autoplay ? this.play() : this.stop();
+    this._autoplay.next(val);
   }
 
-  private _loop: boolean = true;
+  private _pauseOnHover: BehaviorSubject<boolean> = new BehaviorSubject(true);
+  get pauseOnHover(): boolean {
+    return this._pauseOnHover.value;
+  }
+
+  @Input() set pauseOnHover(val: boolean) {
+    this._pauseOnHover.next(val);
+  }
+
+  private _mouseHover: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  get mouseHover(): boolean {
+    return this._mouseHover.value;
+  }
+
+  set mouseHover(val: boolean) {
+    this._mouseHover.next(val);
+  }
+
+  private _pause: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  get pause(): boolean {
+    return this._pause.value;
+  }
+
+  set pause(val: boolean) {
+    this._pause.next(val);
+  }
+
+  private _keyboard: boolean;
+  get keyboard(): boolean {
+    return this._keyboard;
+  }
+
+  @Input() set keyboard(val: boolean) {
+    this._keyboard = val;
+  }
+
+  private _loop: BehaviorSubject<boolean> = new BehaviorSubject(true);
   get loop(): boolean {
-    return this._loop;
+    return this._loop.value;
   }
 
   @Input() set loop(val: boolean) {
-    this._loop = val;
+    this._loop.next(val);
   }
 
-  @Input() keyboard: boolean = true;
-  @Input() interval: number = 3500;
+  private _showArrows: boolean = true;
+  get showArrows(): boolean {
+    return this._showArrows;
+  }
+
+  @Input() set showArrows(val: boolean) {
+    this._showArrows = val;
+  }
+
+  private _showIndicators: boolean;
+  get showIndicators(): boolean {
+    return this._showIndicators;
+  }
+
+  @Input() set showIndicators(val: boolean) {
+    this._showIndicators = val;
+  }
+
+  private _btnOverlay: boolean;
+  get btnOverlay(): boolean {
+    return this._btnOverlay;
+  }
+
+  @Input() set btnOverlay(val: boolean) {
+    this._btnOverlay = val;
+  }
+
 
   @Output() switched: EventEmitter<void> = new EventEmitter<void>();
 
   @HostListener('mouseenter')
   mouseEnter() {
-    if (this.pauseOnHover) {
-      this.stop();
-    }
+    this.mouseHover = true;
   }
 
   @HostListener('mouseleave')
   mouseLeave() {
-    if (this.pauseOnHover) {
-      this.play();
-    }
+    this.mouseHover = false;
   }
 
   @HostListener('keydown.ArrowRight')
@@ -103,40 +163,55 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
     }
   }
 
-  constructor(@Inject(PLATFORM_ID) private _platformId, private _cdr: ChangeDetectorRef) {
+  constructor(@Inject(PLATFORM_ID) private _platformId, private _cdr: ChangeDetectorRef, private zone: NgZone) {
+  }
+
+  private _getItemById(id: number) {
+    return this.items.find(item => item.id === id);
   }
 
   ngAfterContentInit(): void {
-    this.elements = this.items.toArray();
-    this._lastLenght = this.items.length || 0;
-    if (this.autoplay) {
-      this.play();
+    if (isPlatformBrowser(this._platformId)) {
+      this.zone.runOutsideAngular(() => {
+        this._loop.subscribe((val) => {
+          if (val && this.pause) {
+            this.play();
+          }
+        });
+        combineLatest(this._pause, this._pauseOnHover, this._mouseHover, this._interval, this._autoplay)
+          .pipe(
+            map(([pause, pauseOnHover, mouseHover, _interval, autoplay]) =>
+              (!autoplay || (pause || (pauseOnHover && mouseHover)) ? 0 : _interval)),
+
+            distinctUntilChanged(), switchMap(_interval => _interval > 0 ? timer(_interval, _interval) : NEVER),
+            takeUntil(this._destroy))
+          .subscribe(() => {
+            this.zone.run(() => {
+              this.next();
+            });
+          });
+      });
     }
   }
 
   ngAfterContentChecked(): void {
-    if (this.items && this.items.length && this.items.length !== this._lastLenght) {
-      this.elements = this.items.toArray();
-      this._cdr.markForCheck();
-    }
+
   }
 
-  public next() {
-    if (this.activeId === this.elements.length - 1) {
+  public next = () => {
+    if (this.activeId === this.items.last.id) {
       if (this.loop) {
-        this.activeId = 0;
-      } else {
-        this.stop();
+        this.activeId = this.items.first.id;
       }
     } else {
       this.activeId += 1;
     }
-  }
+  };
 
   public prev() {
-    if (this.activeId === 0) {
+    if (this.activeId === this.items.first.id) {
       if (this.loop) {
-        this.activeId = this.elements.length - 1;
+        this.activeId = this.items.last.id;
       }
     } else {
       this.activeId -= 1;
@@ -148,35 +223,17 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
   }
 
   public stop() {
-    this._timerStop.next();
+    this.pause = true;
   }
 
   public play() {
-    if (this.autoplay) {
-      this.resetTimer(this.interval);
-      this.startTimer();
-    }
+    this.pause = false;
   }
 
   ngOnDestroy(): void {
     this._destroy.next();
     this._destroy.complete();
     FFCarouselItemDirective.resetId();
-  }
-
-  private resetTimer(value: number): void {
-    this._timer = interval(value);
-  }
-
-  private startTimer(): void {
-    this._timer
-      .pipe(
-        takeUntil(this._timerStop),
-        takeUntil(this._destroy),
-      )
-      .subscribe(() => {
-        this.next();
-      });
   }
 
 }

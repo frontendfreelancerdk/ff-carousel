@@ -5,7 +5,7 @@
   <a *ngIf="showArrows" class="ff-carousel-btn-next" [ngClass]="{'overlay': btnOverlay}" role="button" (click)="next()">
     <ng-template [ngTemplateOutlet]="arrow?.el"></ng-template>
   </a>
-  <div *ngFor="let elem of elements" class="ff-carousel-element" >
+  <div *ngFor="let elem of items" class="ff-carousel-element" >
     <div *ngIf="elem?.id === activeId" @fadeIn>
       <ng-template [ngTemplateOutlet]="elem?.el"></ng-template>
     </div>
