@@ -172,8 +172,10 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
 
   ngAfterContentInit(): void {
     FFCarouselItemDirective.resetId();
-    if (this.items) {
+    if (this.items && this.items.first) {
       this.activeId = this.items.first.id;
+    } else {
+      this.activeId = 0;
     }
     if (isPlatformBrowser(this._platformId)) {
       this.zone.runOutsideAngular(() => {
