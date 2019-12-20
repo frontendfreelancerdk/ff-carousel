@@ -43,7 +43,7 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
   @Input() set activeId(val: number) {
     this._activeId = val;
     this._cdr.markForCheck();
-    this.switched.emit();
+    this.switched.emit(this._activeId);
   }
 
   private _interval: BehaviorSubject<number> = new BehaviorSubject(3000);
@@ -137,7 +137,7 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
   }
 
 
-  @Output() switched: EventEmitter<void> = new EventEmitter<void>();
+  @Output() switched: EventEmitter<number> = new EventEmitter<number>();
 
   @HostListener('mouseenter')
   mouseEnter() {
@@ -171,6 +171,10 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
   }
 
   ngAfterContentInit(): void {
+    FFCarouselItemDirective.resetId();
+    if (this.items) {
+      this.activeId = this.items.first.id;
+    }
     if (isPlatformBrowser(this._platformId)) {
       this.zone.runOutsideAngular(() => {
         this._loop.subscribe((val) => {
@@ -206,6 +210,7 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
     } else {
       this.activeId += 1;
     }
+    return this.activeId;
   };
 
   public prev() {
@@ -216,6 +221,7 @@ export class FFCarouselComponent implements AfterContentInit, AfterContentChecke
     } else {
       this.activeId -= 1;
     }
+    return this.activeId;
   }
 
   public setActive(id: number) {
