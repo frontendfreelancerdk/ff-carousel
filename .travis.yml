@@ -7,12 +7,3 @@ node_js:
 script:
   - npm run test_lib
   - npm run build_lib
-before_deploy:
-  - cd dist/ff-carousel
-deploy:
-  provider: npm
-  skip_cleanup: true
-  email: developer@frontend-freelancer.com
-  on:
-    tags: true
-    branch: master
