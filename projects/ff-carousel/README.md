@@ -48,7 +48,7 @@ Once ff-carousel is imported, you can use its directive in your Angular applicat
 
 You should put slides (1*), indicators (2*) and arrows (3*) as ng-content:
 
-```angular2html
+```html
 <ff-carousel>
 <!-- (1) You should mark you slide with *ffCarouselItem directive to let ff-carousel know that it's slide -->
 <!-- Then you can make your own structure and styles for slide -->
@@ -153,7 +153,7 @@ Exported as: `FFCarousel`
 ## Example
 
 `app.component.html`
-```angular2html
+```html
 <ff-carousel [btnOverlay]="true" (switched)="switched()" #myCarousel="FFCarousel">
   <ng-container *ngFor="let img of images">
     <div *ffCarouselItem class="imgWrapper">
