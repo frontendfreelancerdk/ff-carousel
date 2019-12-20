@@ -1,6 +1,6 @@
 {
   "name": "ff-carousel-app",
-  "version": "8.1.5",
+  "version": "8.1.6",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
